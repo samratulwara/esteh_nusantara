@@ -128,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '🌿 Segar dari Alam Nusantara',
+                      '🌿 Aslinya tehNusantara',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.white70,

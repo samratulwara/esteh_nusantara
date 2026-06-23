@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Beli 2 Gratis 1\nEs Teh Manis!',
+                  '',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
