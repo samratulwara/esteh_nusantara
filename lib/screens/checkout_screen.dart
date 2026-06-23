@@ -9,7 +9,7 @@ import 'order_success_screen.dart';
 
 // =====================================================
 // GANTI NOMOR HP PEMILIK TOKO DI SINI ↓
-const String nomorWaPemilik = '6285199107077'; // format: 62xxxxxxxxxx
+const String nomorWaPemilik = '6282325083731'; // format: 62xxxxxxxxxx
 // =====================================================
 
 class CheckoutScreen extends StatefulWidget {
@@ -156,7 +156,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 20),
 
             // Metode Pengiriman
-            _SectionTitle(title: '🚗 Metode Pengiriman'),
+            _SectionTitle(title: ' Metode Pengiriman'),
             const SizedBox(height: 10),
             ...metodePengirimanList.map((m) => _OptionTile(
                   label: m,
