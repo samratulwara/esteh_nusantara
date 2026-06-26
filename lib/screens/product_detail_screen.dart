@@ -23,43 +23,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   final List<String> sweetnessList = ['Kurang Manis', 'Normal', 'Extra Manis'];
 
-  // ── Minuman: hanya ukuran M (sedang) ──
-  final List<Map<String, dynamic>> _drinkSizes = [
-    {'label': 'M', 'desc': 'Sedang', 'price': 0.0},
-  ];
-
-  // ── Dimsum: 1 pcs / 3 pcs / 7 pcs ──
-  final List<Map<String, dynamic>> _dimsumSizes = [
-    {'label': 'S', 'desc': '1 pcs',  'price': 1500.0},
-    {'label': 'M', 'desc': '3 pcs',  'price': 5000.0},
-    {'label': 'L', 'desc': '7 pcs',  'price': 10000.0},
-  ];
-
-  // ── Gorengan: tanpa pilihan ukuran, harga tetap 1.000 ──
-  // (tidak ada size selector, harga langsung dari product.price)
-
-  bool get isDrink =>
-      widget.product.category == 'Tea Series' ||
-      widget.product.category == 'Milk Tea Series' ||
-      widget.product.category == 'Macchiato Series' ||
-      widget.product.category == 'Herbal Series';
-
-  bool get isDimsum => widget.product.category == 'Jajanan Dimsum';
-  bool get isGorengan => widget.product.category == 'Aneka Gorengan';
-
-  List<Map<String, dynamic>> get currentSizes {
-    if (isDrink)   return _drinkSizes;
-    if (isDimsum)  return _dimsumSizes;
-    return [];
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    if (isDrink)    _selectedSize = 'M';
-    if (isDimsum)   _selectedSize = 'S';
-    if (isGorengan) _selectedSize = '';
-  }
+  double get sizeMultiplier =>
+      _selectedSize == 'S' ? 1.0 : _selectedSize == 'M' ? 1.3 : 1.6;
 
   double get totalPrice {
     if (isDimsum) {

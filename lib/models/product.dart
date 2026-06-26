@@ -6,7 +6,9 @@ class Product {
   final String emoji;
   final String category;
   final bool isBestSeller;
-  final String? imagePath; // path ke assets/images/nama_file.jpg
+  final String? imagePath;
+  // Jika true, produk tidak pakai sistem porsi S/M/L — harga langsung dari price
+  final bool fixedPrice;
 
   const Product({
     required this.id,
@@ -17,5 +19,6 @@ class Product {
     required this.category,
     this.isBestSeller = false,
     this.imagePath,
+    this.fixedPrice = false,
   });
 }
