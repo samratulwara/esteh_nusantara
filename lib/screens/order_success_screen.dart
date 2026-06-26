@@ -4,11 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import 'home_screen.dart';
 
-// ============================================================
-// ⚠️  GANTI NOMOR HP PEMILIK TOKO DI SINI
-//     Format: 62 + nomor tanpa angka 0 di depan
-//     Contoh: 085199107077 → tulis 6285199107077
-// ============================================================
+
 const String nomorWaPemilik = '6282325083731';
 
 class OrderSuccessScreen extends StatefulWidget {

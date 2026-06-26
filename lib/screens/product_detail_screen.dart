@@ -5,7 +5,6 @@ import '../theme.dart';
 import '../models/product.dart';
 import '../models/cart_provider.dart';
 
-
 import 'cart_screen.dart';
 import '../widgets/product_image_widget.dart';
 
@@ -22,21 +21,66 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String _selectedSweetness = 'Normal';
   int _quantity = 1;
 
-  final List<Map<String, String>> sizes = [
-    {'label': 'S', 'desc': '300ml'},
-    {'label': 'M', 'desc': '500ml'},
-    {'label': 'L', 'desc': '700ml'},
-  ];
-
   final List<String> sweetnessList = ['Kurang Manis', 'Normal', 'Extra Manis'];
 
-  double get sizeMultiplier =>
-      _selectedSize == 'S' ? 1.0 : _selectedSize == 'M' ? 1.3 : 1.6;
+  // ── Minuman: hanya ukuran M (sedang) ──
+  final List<Map<String, dynamic>> _drinkSizes = [
+    {'label': 'M', 'desc': 'Sedang', 'price': 0.0},
+  ];
 
-  double get totalPrice => widget.product.price * sizeMultiplier * _quantity;
+  // ── Dimsum: 1 pcs / 3 pcs / 7 pcs ──
+  final List<Map<String, dynamic>> _dimsumSizes = [
+    {'label': 'S', 'desc': '1 pcs',  'price': 1500.0},
+    {'label': 'M', 'desc': '3 pcs',  'price': 5000.0},
+    {'label': 'L', 'desc': '7 pcs',  'price': 10000.0},
+  ];
+
+  // ── Gorengan: tanpa pilihan ukuran, harga tetap 1.000 ──
+  // (tidak ada size selector, harga langsung dari product.price)
+
+  bool get isDrink =>
+      widget.product.category == 'Tea Series' ||
+      widget.product.category == 'Milk Tea Series' ||
+      widget.product.category == 'Macchiato Series' ||
+      widget.product.category == 'Herbal Series';
+
+  bool get isDimsum => widget.product.category == 'Jajanan Dimsum';
+  bool get isGorengan => widget.product.category == 'Aneka Gorengan';
+
+  List<Map<String, dynamic>> get currentSizes {
+    if (isDrink)   return _drinkSizes;
+    if (isDimsum)  return _dimsumSizes;
+    return [];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (isDrink)    _selectedSize = 'M';
+    if (isDimsum)   _selectedSize = 'S';
+    if (isGorengan) _selectedSize = '';
+  }
+
+  double get totalPrice {
+    if (isDimsum) {
+      // harga diambil dari pilihan size dimsum
+      final sel = _dimsumSizes.firstWhere(
+        (s) => s['label'] == _selectedSize,
+        orElse: () => _dimsumSizes.first,
+      );
+      return (sel['price'] as double) * _quantity;
+    }
+    if (isDrink) {
+      // minuman: harga base × 1 (hanya M)
+      return widget.product.price * _quantity;
+    }
+    // gorengan: harga per pcs × qty
+    return widget.product.price * _quantity;
+  }
 
   String formatPrice(double price) {
-    return 'Rp ${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}';
+    return 'Rp ${price.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}';
   }
 
   @override
@@ -61,9 +105,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
-            actions: [
-              _CartIconButton(),
-            ],
+            actions: [_CartIconButton()],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -72,7 +114,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     imagePath: widget.product.imagePath,
                     fit: BoxFit.cover,
                   ),
-                  // Overlay gelap bawah supaya teks terlaris tetap terbaca
                   if (widget.product.isBestSeller)
                     Positioned(
                       bottom: 16, left: 0, right: 0,
@@ -85,7 +126,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                           child: Text('🔥 Menu Terlaris',
                             style: GoogleFonts.poppins(
-                              fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.darkGreen)),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.darkGreen)),
                         ),
                       ),
                     ),
@@ -93,6 +136,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
           ),
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -100,19 +144,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Name & Category
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.product.name,
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    widget.product.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textDark,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(
@@ -141,7 +179,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Price
+                  // Price display
                   Row(
                     children: [
                       Text(
@@ -150,7 +188,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        formatPrice(widget.product.price),
+                        isDimsum
+                            ? formatPrice(_dimsumSizes.first['price'])
+                            : formatPrice(widget.product.price),
                         style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
@@ -164,110 +204,145 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const Divider(color: AppColors.paleGreen, thickness: 2),
                   const SizedBox(height: 16),
 
-                  // Size Selection
-                  Text(
-                    'Pilih Ukuran',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: sizes.map((s) {
-                      final isSelected = _selectedSize == s['label'];
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedSize = s['label']!),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  // ── SIZE SELECTOR ──
+                  if (isDrink) ...[
+                    Text('Ukuran',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    const SizedBox(height: 10),
+                    // Hanya tampil 1 tombol: Sedang
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryGreen : Colors.white,
+                            color: AppColors.primaryGreen,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isSelected ? AppColors.primaryGreen : AppColors.paleGreen,
-                              width: 2,
-                            ),
+                            border: Border.all(color: AppColors.primaryGreen, width: 2),
                           ),
                           child: Column(
                             children: [
-                              Text(
-                                s['label']!,
+                              Text('M',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 18,
-                                  color: isSelected ? Colors.white : AppColors.textDark,
-                                ),
-                              ),
-                              Text(
-                                s['desc']!,
+                                  color: Colors.white)),
+                              Text('Sedang',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: isSelected ? Colors.white70 : AppColors.textGrey,
-                                ),
-                              ),
+                                  fontSize: 11, color: Colors.white70)),
                             ],
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Sweetness
-                  Text(
-                    'Tingkat Kemanisan',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    children: sweetnessList.map((sw) {
-                      final isSelected = _selectedSweetness == sw;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedSweetness = sw),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryYellow : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected ? AppColors.deepYellow : AppColors.paleGreen,
-                              width: 2,
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (isDimsum) ...[
+                    Text('Pilih Porsi',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: _dimsumSizes.map((s) {
+                        final isSelected = _selectedSize == s['label'];
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedSize = s['label']),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primaryGreen : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected ? AppColors.primaryGreen : AppColors.paleGreen,
+                                width: 2,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(s['desc'],
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                    color: isSelected ? Colors.white : AppColors.textDark)),
+                                Text(formatPrice(s['price']),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: isSelected ? Colors.white70 : AppColors.textGrey)),
+                              ],
                             ),
                           ),
-                          child: Text(
-                            sw,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected ? AppColors.darkGreen : AppColors.textGrey,
-                            ),
-                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  if (isGorengan) ...[
+                    Text('Harga per pcs',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        formatPrice(widget.product.price),
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Quantity
-                  Text(
-                    'Jumlah',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // ── SWEETNESS (hanya untuk minuman) ──
+                  if (isDrink) ...[
+                    Text('Tingkat Kemanisan',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      children: sweetnessList.map((sw) {
+                        final isSelected = _selectedSweetness == sw;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedSweetness = sw),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primaryYellow : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? AppColors.deepYellow : AppColors.paleGreen,
+                                width: 2,
+                              ),
+                            ),
+                            child: Text(sw,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? AppColors.darkGreen : AppColors.textGrey,
+                              )),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // ── QUANTITY ──
+                  Text('Jumlah',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -276,14 +351,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         onTap: () { if (_quantity > 1) setState(() => _quantity--); },
                       ),
                       const SizedBox(width: 16),
-                      Text(
-                        '$_quantity',
+                      Text('$_quantity',
                         style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
-                        ),
-                      ),
+                          fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textDark)),
                       const SizedBox(width: 16),
                       _QtyButton(
                         icon: Icons.add,
@@ -307,7 +377,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           color: Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, -4)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -4)),
           ],
         ),
         child: Row(
@@ -317,7 +390,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total Harga', style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textGrey)),
+                  Text('Total Harga',
+                    style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textGrey)),
                   Text(
                     formatPrice(totalPrice),
                     style: GoogleFonts.poppins(
@@ -333,16 +407,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               flex: 2,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  context.read<CartProvider>().addItem(
-                    widget.product,
-                    size: _selectedSize,
-                    sweetness: _selectedSweetness,
-                  );
-                  for (int i = 1; i < _quantity; i++) {
+                  final sizeLabel = isGorengan
+                      ? 'Satuan'
+                      : isDimsum
+                          ? _dimsumSizes.firstWhere(
+                              (s) => s['label'] == _selectedSize,
+                              orElse: () => _dimsumSizes.first)['desc']
+                          : 'Sedang';
+
+                  for (int i = 0; i < _quantity; i++) {
                     context.read<CartProvider>().addItem(
                       widget.product,
-                      size: _selectedSize,
-                      sweetness: _selectedSweetness,
+                      size: sizeLabel,
+                      sweetness: isDrink ? _selectedSweetness : '-',
                     );
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -350,7 +427,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       content: const Text('✅ Ditambahkan ke keranjang!'),
                       backgroundColor: AppColors.primaryGreen,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     ),
                   );
                 },
@@ -359,7 +437,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -386,9 +465,11 @@ class _QtyButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: isPrimary ? AppColors.primaryGreen : Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isPrimary ? AppColors.primaryGreen : AppColors.paleGreen, width: 2),
+          border: Border.all(
+            color: isPrimary ? AppColors.primaryGreen : AppColors.paleGreen, width: 2),
         ),
-        child: Icon(icon, color: isPrimary ? Colors.white : AppColors.primaryGreen, size: 20),
+        child: Icon(icon,
+          color: isPrimary ? Colors.white : AppColors.primaryGreen, size: 20),
       ),
     );
   }
@@ -402,16 +483,19 @@ class _CartIconButton extends StatelessWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.shopping_cart_rounded, color: Colors.white),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+          onPressed: () => Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const CartScreen())),
         ),
         if (cart.totalItems > 0)
           Positioned(
             right: 8, top: 8,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: AppColors.primaryYellow, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryYellow, shape: BoxShape.circle),
               child: Text('${cart.totalItems}',
-                style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: AppColors.darkGreen)),
+                style: GoogleFonts.poppins(
+                  fontSize: 9, fontWeight: FontWeight.w800, color: AppColors.darkGreen)),
             ),
           ),
       ],

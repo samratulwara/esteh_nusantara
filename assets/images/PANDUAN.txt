@@ -1,0 +1,63 @@
+====================================================
+PANDUAN TAMBAH GAMBAR - ES TEH NUSANTARA
+====================================================
+
+Simpan file gambar di folder ini dengan nama PERSIS
+seperti di bawah (huruf kecil, pakai underscore):
+
+---- TEA SERIES ----
+original_tea.jpg
+peach_tea.jpg
+lychee_tea.jpg
+lemon_tea.jpg
+yakult_tea.jpg
+honeylime_tea.jpg
+cocopandan_tea.jpg
+teh_jahe_jeruk.jpg
+teh_susu_jahe_jeruk.jpg
+teh_sereh_wangi.jpg
+
+---- MILK TEA SERIES ----
+milktea.jpg
+choco_milktea.jpg
+taro.jpg
+green_tea.jpg
+coffelatte.jpg
+strawberry_milktea.jpg
+mango_milktea.jpg
+cookies_milktea.jpg
+es_melon.jpg
+coklat_premium.jpg
+
+---- MACCHIATO SERIES ----
+chocolate_macchiato.jpg
+red_velvet_macchiato.jpg
+greentea_macchiato.jpg
+taro_macchiato.jpg
+
+---- HERBAL SERIES ----
+bandrek.jpg
+bandrek_susu.jpg
+wedang_jahe.jpg
+wedang_uwuh.jpg
+
+---- JAJANAN DIMSUM ----
+dimsum_ayam.jpg
+dimsum_frozen.jpg
+dimsum_sosis.jpg
+bakso_crispy.jpg
+tahu_bakso_topping.jpg
+sempol_ayam.jpg
+
+---- ANEKA GORENGAN ----
+pisang_goreng.jpg
+tahu_goreng.jpg
+tempe_goreng.jpg
+bakwan.jpg
+bakso_goreng.jpg
+tahu_bakso_goreng.jpg
+
+====================================================
+FORMAT GAMBAR: .jpg atau .png
+UKURAN IDEAL: 400x400 pixel (persegi)
+====================================================

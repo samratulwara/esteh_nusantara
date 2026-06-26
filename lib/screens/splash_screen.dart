@@ -128,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '🌿 Aslinya tehNusantara',
+                      '🌿 Aslinya teh Nusantara',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.white70,
@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 60),
-                  SizedBox(
+                  const SizedBox(
                     width: 40,
                     height: 40,
                     child: CircularProgressIndicator(

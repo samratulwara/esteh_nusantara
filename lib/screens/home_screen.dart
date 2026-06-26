@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '🌟 PROMO HARI INI',
+                    '🌟',
                     style: GoogleFonts.poppins(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -160,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Berlaku s/d hari ini pukul 21.00',
+                  'Nikmati kesegaran es teh Nusantara di setiap tegukan!',
                   style: GoogleFonts.poppins(fontSize: 11, color: Colors.white70),
                 ),
                 const SizedBox(height: 8),
