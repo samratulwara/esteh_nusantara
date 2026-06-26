@@ -17,29 +17,53 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  String _selectedSize = 'M';
+  String _selectedSize = 'S';
   String _selectedSweetness = 'Normal';
   int _quantity = 1;
 
   final List<String> sweetnessList = ['Kurang Manis', 'Normal', 'Extra Manis'];
 
-  double get sizeMultiplier =>
-      _selectedSize == 'S' ? 1.0 : _selectedSize == 'M' ? 1.3 : 1.6;
+  // Porsi dimsum (Dimsum Ayam & Dimsum Sosis)
+  final List<Map<String, dynamic>> _dimsumSizes = [
+    {'label': 'S', 'desc': '1 pcs',  'price': 1500.0},
+    {'label': 'M', 'desc': '3 pcs',  'price': 5000.0},
+    {'label': 'L', 'desc': '7 pcs',  'price': 10000.0},
+  ];
+
+  // Kategori minuman
+  bool get isDrink =>
+      widget.product.category == 'Tea Series' ||
+      widget.product.category == 'Milk Tea Series' ||
+      widget.product.category == 'Macchiato Series' ||
+      widget.product.category == 'Herbal Series';
+
+  // Dimsum dengan pilihan porsi S/M/L (Dimsum Ayam & Dimsum Sosis)
+  bool get isDimsum =>
+      widget.product.category == 'Jajanan Dimsum' &&
+      !widget.product.fixedPrice;
+
+  // Gorengan + dimsum harga tetap (Frozen, Bakso Crispy, Tahu Bakso, Sempol)
+  bool get isGorengan =>
+      widget.product.category == 'Aneka Gorengan' ||
+      (widget.product.category == 'Jajanan Dimsum' && widget.product.fixedPrice);
+
+  @override
+  void initState() {
+    super.initState();
+    if (isDrink)    _selectedSize = 'M';
+    if (isDimsum)   _selectedSize = 'S';
+    if (isGorengan) _selectedSize = '';
+  }
 
   double get totalPrice {
     if (isDimsum) {
-      // harga diambil dari pilihan size dimsum
       final sel = _dimsumSizes.firstWhere(
         (s) => s['label'] == _selectedSize,
         orElse: () => _dimsumSizes.first,
       );
       return (sel['price'] as double) * _quantity;
     }
-    if (isDrink) {
-      // minuman: harga base × 1 (hanya M)
-      return widget.product.price * _quantity;
-    }
-    // gorengan: harga per pcs × qty
+    // minuman & gorengan: harga dari product.price
     return widget.product.price * _quantity;
   }
 
@@ -154,7 +178,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const SizedBox(width: 8),
                       Text(
                         isDimsum
-                            ? formatPrice(_dimsumSizes.first['price'])
+                            ? formatPrice(_dimsumSizes.first['price'] as double)
                             : formatPrice(widget.product.price),
                         style: GoogleFonts.poppins(
                           fontSize: 22,
@@ -169,13 +193,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const Divider(color: AppColors.paleGreen, thickness: 2),
                   const SizedBox(height: 16),
 
-                  // ── SIZE SELECTOR ──
+                  // ── SIZE SELECTOR MINUMAN (hanya M/Sedang) ──
                   if (isDrink) ...[
                     Text('Ukuran',
                       style: GoogleFonts.poppins(
                         fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                     const SizedBox(height: 10),
-                    // Hanya tampil 1 tombol: Sedang
                     Row(
                       children: [
                         Container(
@@ -203,6 +226,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
+                  // ── PORSI DIMSUM (1/3/7 pcs) ──
                   if (isDimsum) ...[
                     Text('Pilih Porsi',
                       style: GoogleFonts.poppins(
@@ -212,7 +236,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       children: _dimsumSizes.map((s) {
                         final isSelected = _selectedSize == s['label'];
                         return GestureDetector(
-                          onTap: () => setState(() => _selectedSize = s['label']),
+                          onTap: () => setState(() => _selectedSize = s['label'] as String),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             margin: const EdgeInsets.only(right: 12),
@@ -227,12 +251,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             child: Column(
                               children: [
-                                Text(s['desc'],
+                                Text(s['desc'] as String,
                                   style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 15,
                                     color: isSelected ? Colors.white : AppColors.textDark)),
-                                Text(formatPrice(s['price']),
+                                Text(formatPrice(s['price'] as double),
                                   style: GoogleFonts.poppins(
                                     fontSize: 11,
                                     color: isSelected ? Colors.white70 : AppColors.textGrey)),
@@ -245,6 +269,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
+                  // ── HARGA TETAP (gorengan & dimsum fixedPrice) ──
                   if (isGorengan) ...[
                     Text('Harga per pcs',
                       style: GoogleFonts.poppins(
@@ -268,7 +293,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // ── SWEETNESS (hanya untuk minuman) ──
+                  // ── TINGKAT KEMANISAN (hanya minuman) ──
                   if (isDrink) ...[
                     Text('Tingkat Kemanisan',
                       style: GoogleFonts.poppins(
@@ -304,7 +329,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // ── QUANTITY ──
+                  // ── JUMLAH ──
                   Text('Jumlah',
                     style: GoogleFonts.poppins(
                       fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
@@ -375,9 +400,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   final sizeLabel = isGorengan
                       ? 'Satuan'
                       : isDimsum
-                          ? _dimsumSizes.firstWhere(
+                          ? (_dimsumSizes.firstWhere(
                               (s) => s['label'] == _selectedSize,
-                              orElse: () => _dimsumSizes.first)['desc']
+                              orElse: () => _dimsumSizes.first)['desc'] as String)
                           : 'Sedang';
 
                   for (int i = 0; i < _quantity; i++) {
