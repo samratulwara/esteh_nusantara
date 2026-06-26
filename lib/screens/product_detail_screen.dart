@@ -405,11 +405,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               orElse: () => _dimsumSizes.first)['desc'] as String)
                           : 'Sedang';
 
+                  // harga override untuk dimsum porsi
+                  final double? overridePrice = isDimsum
+                      ? (_dimsumSizes.firstWhere(
+                          (s) => s['label'] == _selectedSize,
+                          orElse: () => _dimsumSizes.first)['price'] as double)
+                      : null;
+
                   for (int i = 0; i < _quantity; i++) {
                     context.read<CartProvider>().addItem(
                       widget.product,
                       size: sizeLabel,
                       sweetness: isDrink ? _selectedSweetness : '-',
+                      overridePrice: overridePrice,
                     );
                   }
                   ScaffoldMessenger.of(context).showSnackBar(

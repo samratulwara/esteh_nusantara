@@ -29,14 +29,14 @@ class CartProvider extends ChangeNotifier {
     return subtotal + getDeliveryFee(metodePengiriman);
   }
 
-  void addItem(Product product, {String size = 'M', String sweetness = 'Normal'}) {
+  void addItem(Product product, {String size = 'M', String sweetness = 'Normal', double? overridePrice}) {
     final existingIndex = _items.indexWhere(
       (item) => item.product.id == product.id && item.size == size && item.sweetness == sweetness,
     );
     if (existingIndex >= 0) {
       _items[existingIndex].quantity++;
     } else {
-      _items.add(CartItem(product: product, size: size, sweetness: sweetness));
+      _items.add(CartItem(product: product, size: size, sweetness: sweetness, overridePrice: overridePrice));
     }
     notifyListeners();
   }
